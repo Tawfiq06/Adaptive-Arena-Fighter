@@ -15,8 +15,8 @@ Two players fight across four hand-crafted arenas that physically transform mid-
 
 | | |
 |---|---|
-| ![Greenreach](assets/maps/greenreach.png) | ![Coralpoint](assets/maps/coralpoint.png) |
-| ![Tundra](assets/maps/tundra.png) | ![Ironridge](assets/maps/ironridge.png) |
+| <img width="2030" height="1524" alt="greenreach" src="https://github.com/user-attachments/assets/e7e2e660-fb32-4ea4-a909-85b4bea9ee84" />| <img width="2030" height="1527" alt="coralpoint" src="https://github.com/user-attachments/assets/99d14ab8-d183-4fda-812a-a268f09d345a" /> |
+| <img width="2030" height="1528" alt="tundra" src="https://github.com/user-attachments/assets/8a3bb045-0c5b-4920-80df-26106e51f419" /> | <img width="2030" height="1522" alt="ironridge" src="https://github.com/user-attachments/assets/0d9efd2c-48f7-40f1-89db-0671ae372d40" />|
 
 ---
 
@@ -60,7 +60,7 @@ Navigate menus with Enter to confirm, Esc to go back.
 
 Each arena has its own evolution rule tied to its biome. Every ~1.5 seconds a tile transformation fires. The map slowly becomes a different place than where the match started, which keeps both players moving and thinking.
 
-Tiles carry gameplay flags that the physics engine checks every frame: solid tiles block movement entirely, water tiles halve speed, lava and storm zones drain HP over time, and ice tiles preserve momentum so players slide past where they intended to stop.
+Tiles carry gameplay flags that the physics engine checks every frame: solid tiles block movement entirely, water tiles halve speed, lava and storm zones drain HP over time, and ice tiles preserve momentum so they cannot change direction until they hit something or reach the end of the ice.
 
 ---
 
@@ -82,15 +82,11 @@ A sandy beach with water patches. Over time those patches freeze into ice and fr
 |---|---|
 | <img width="2030" height="1527" alt="coralpoint" src="https://github.com/user-attachments/assets/99d14ab8-d183-4fda-812a-a268f09d345a" /> | <img width="2035" height="1525" alt="coralpoint_evo" src="https://github.com/user-attachments/assets/05e8ac9c-6df2-4ec0-aca1-577c8c70cb70" /> |
 
-Ice changes movement fundamentally: momentum is preserved when you step onto it, so you slide past where you meant to stop. A familiar arena becomes slippery mid-fight.
-
-![Ice momentum demo](assets/gifs/ice_movement.gif)
-
 ---
 
 ### Tundra
 
-A snow and frost biome. Lava vents randomly erupt across the floor during the match, making it impossible to claim safe ground.
+A snow and ice biome. Lava vents randomly erupt across the floor during the match, making it impossible to claim safe ground.
 
 | Start | Mid-match |
 |---|---|
@@ -117,6 +113,17 @@ A rocky stone arena. Flooding begins mid-match: water rises ring by ring from th
 On top of each map's own evolution, a **universal storm mechanic** closes in on every match. Starting at 30 seconds, a ring of poison cloud tiles appears at the border of the map. Every 30 seconds after that, another ring closes inward. Each ring sets both `TILE_FLAG_DAMAGE` and `TILE_FLAG_SLOW` on those tiles, draining HP and slowing movement.
 
 The storm is map-agnostic and runs in parallel with the map's own evolution. In the late game, you are dealing with both the map's transformation and an ever-shrinking safe zone. It guarantees the match ends and rewards players who stay central and aggressive.
+
+<table>
+  <tr>
+    <td valign="top"><img src="https://github.com/user-attachments/assets/1fc6ae7c-8fd2-4adb-bd88-0c99740c4248" alt="storm1" width="250" /></td>
+    <td valign="top"><img src="https://github.com/user-attachments/assets/80808f90-1ab8-4d3d-b9da-e3a954284367" alt="storm2" width="250" /></td>
+    <td valign="top"><img src="https://github.com/user-attachments/assets/afa4a61d-580c-4834-b271-a51837d45a79" alt="storm3" width="250" /></td>
+    <td valign="top"><img src="https://github.com/user-attachments/assets/3ca5afe0-8509-4e92-9050-15385c46d654" alt="storm4" width="250" /></td>
+    <td valign="top"><img src="https://github.com/user-attachments/assets/068122eb-d3da-44f0-be7e-d704b9f598de" alt="storm5" width="250" /></td>
+  </tr>
+</table>
+
 
 ---
 
@@ -158,12 +165,7 @@ Inside the ISR, samples are pushed to the audio FIFO from a mixer that combines 
 
 The result is audio that is completely decoupled from game loop timing. A slow frame has no effect on audio quality.
 
-All audio assets (sword swing variants, arrow sounds, block clashes, item pickups, background music, ambient storm audio) are stored as raw PCM arrays compiled directly into the binary. No file system, no loading.
-
-The RISC-V CSR instructions used to set this up:
-- `csrw mtvec` sets the exception/interrupt vector
-- `csrs mstatus` enables global interrupts
-- `csrs mie` enables specific interrupt lines (IRQ16 for the frame timer, IRQ17 for audio)
+All audio assets (sword swing variants, arrow sounds, block clashes, item pickups, background music, ambient storm audio) are stored as raw PCM arrays compiled directly into the binary.
 
 ---
 
@@ -241,7 +243,7 @@ Running a full game loop at 60fps on bare-metal RISC-V without hardware accelera
 
 **Canopy culling** only runs the second-pass canopy draw for decorations near a player, avoiding unnecessary sprite blits.
 
-**Transparency via color key** uses magenta (RGB565 `0xF81F`) as a transparent pixel value. The renderer skips those writes rather than overdrawing background tiles, with no need for a separate alpha buffer.
+**Transparency via color key** uses magenta (RGB565 `0xF81F`) as a transparent pixel value. The renderer skips those writes rather than overdrawing background tiles.
 
 ---
 
@@ -256,4 +258,4 @@ Running a full game loop at 60fps on bare-metal RISC-V without hardware accelera
 | Frame pacing | Hardware timer on IRQ16, sets `frame_flag` each frame |
 | Double buffer | Two 512x240 pixel buffers, swapped via `PIXEL_BUF_CTRL` |
 
-All peripheral access is through memory-mapped I/O using the Cyclone V address map. No drivers, no HAL, no abstraction layer beyond what we wrote.
+All peripheral access is through memory-mapped I/O using the Cyclone V address map.

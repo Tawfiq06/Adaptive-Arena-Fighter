@@ -66,21 +66,21 @@ Tiles carry gameplay flags that the physics engine checks every frame: solid til
 
 ### Greenreach
 
-A lush meadow with autumn trees. Mid-match, lava creeps inward from the edges. The playable space shrinks over time and standing still becomes dangerous.
+A lush meadow with autumn trees. Mid-match, lava creeps inward from the edges burning trees close by.
 
 | Start | Mid-match |
 |---|---|
-| ![Greenreach start](assets/greenreach_start.png) | ![Greenreach evolved](assets/greenreach_lava.png) |
+| <img width="2030" height="1524" alt="greenreach" src="https://github.com/user-attachments/assets/e7e2e660-fb32-4ea4-a909-85b4bea9ee84" /> | <img width="2030" height="1517" alt="greenreach_evo" src="https://github.com/user-attachments/assets/99bb2469-f0c8-409e-93ad-735105702492" /> |
 
 ---
 
 ### Coralpoint
 
-A sandy beach with water patches. Over time those patches freeze into ice.
+A sandy beach with water patches. Over time those patches freeze into ice and freezing close by trees.
 
 | Start | Mid-match |
 |---|---|
-| ![Coralpoint start](assets/coralpoint_start.png) | ![Coralpoint evolved](assets/coralpoint_ice.png) |
+| <img width="2030" height="1527" alt="coralpoint" src="https://github.com/user-attachments/assets/99d14ab8-d183-4fda-812a-a268f09d345a" /> | <img width="2035" height="1525" alt="coralpoint_evo" src="https://github.com/user-attachments/assets/05e8ac9c-6df2-4ec0-aca1-577c8c70cb70" /> |
 
 Ice changes movement fundamentally: momentum is preserved when you step onto it, so you slide past where you meant to stop. A familiar arena becomes slippery mid-fight.
 
@@ -94,7 +94,7 @@ A snow and frost biome. Lava vents randomly erupt across the floor during the ma
 
 | Start | Mid-match |
 |---|---|
-| ![Tundra start](assets/tundra_start.png) | ![Tundra evolved](assets/tundra_lava.png) |
+| <img width="2030" height="1528" alt="tundra" src="https://github.com/user-attachments/assets/8a3bb045-0c5b-4920-80df-26106e51f419" /> | <img width="2468" height="1831" alt="tundra_evo" src="https://github.com/user-attachments/assets/c56f4768-a9e4-4250-9426-252e6d60a323" />|
 
 ![Lava damage demo](assets/gifs/lava_damage.gif)
 
@@ -106,7 +106,7 @@ A rocky stone arena. Flooding begins mid-match: water rises ring by ring from th
 
 | Start | Mid-match |
 |---|---|
-| ![Ironridge start](assets/ironridge_start.png) | ![Ironridge evolved](assets/ironridge_flood.png) |
+| <img width="2030" height="1522" alt="ironridge" src="https://github.com/user-attachments/assets/0d9efd2c-48f7-40f1-89db-0671ae372d40" /> | <img width="2030" height="1534" alt="ironridge_evo" src="https://github.com/user-attachments/assets/e2d9a1c0-8cdd-4d2f-8bbd-9aeef5eda2ad" /> |
 
 ![Water slowdown demo](assets/gifs/water_slow.gif)
 
@@ -142,12 +142,9 @@ Before the match, both players type a custom name using the keyboard. The screen
 
 In-game, each name renders directly above its player's health bar. The position is calculated from the string length so it always sits centered over the bar regardless of how long the name is.
 
-```
-  ALEX                   SARAH
-  [====----]         [======--]
-```
-
-Small detail, but it makes local multiplayer feel noticeably more personal.
+<p align="center">
+  <img width="600" height="451" alt="name_enter" src="https://github.com/user-attachments/assets/495e32ae-c7a2-4572-affa-a6e665639b99" />
+</p>
 
 ---
 

@@ -216,21 +216,42 @@ This structure mattered in practice. The ice map was added mid-project and requi
 
 ## Reinforcement Learning AI
 
-The AI opponent uses a small neural network trained with reinforcement learning via **Gymnasium** in Python, then exported as C float arrays and run entirely in C on the RISC-V processor. No external library, no runtime Python, no dynamic allocation. Just matrix multiplication and ReLU, running deterministically within a bounded time window every frame.
+The AI opponent uses a small neural network trained with reinforcement learning via **Gymnasium** in Python, then exported as C float arrays and run entirely in C on the Nios V/RISC-V processor. No external library, no runtime Python, no dynamic allocation. Just matrix multiplication and ReLU, running deterministically within a bounded time window every frame.
+
+**Watch the trained agent fight a player:**
+[![RL Agent Demo](assets/rl_demo_thumbnail.png)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
 
 ### Training Approach
 
-We built a Python simulation environment that mirrored the game's physics and combat rules. The agent was trained using PPO (Proximal Policy Optimization) from Stable-Baselines3.
+We built a Python simulation environment that mirrored the game's physics and combat rules. The agent trained against a scripted heuristic opponent using PPO (Proximal Policy Optimization) from Stable-Baselines3, across multiple versions that each built on the weights of the last. After several rounds of iteration, **v3 was the best performing checkpoint** and is the one running in the final game.
 
-Training was staged intentionally:
+Training was split into two deliberate phases:
 
-**Stage 1: Movement only.** The reward was simply for reducing distance to the opponent. No attack signals, nothing complex. The goal was to establish stable movement behavior before adding combat. This foundation made later training significantly more stable than trying to learn everything simultaneously from scratch.
+**Phase 1: Movement.** The reward signal focused purely on closing distance to the opponent. No attack signals, no complex shaping. Trying to learn everything at once from scratch produced erratic behavior, so this foundation came first.
 
-**Stage 2: Combat rewards.** Once movement was solid, we added reward shaping for landing hits, taking damage, using block against incoming attacks, and survival. The agent learned to use its full action space.
+**Phase 2: Combat.** Once movement was solid, we introduced a richer reward structure and upgraded to a larger 128x128 network architecture. The agent learned to land melee and ranged hits, block incoming attacks, dodge arrows, and retreat when health was low.
+
+Not everything worked as intended though. Reward signals were defined for seeking health potions and for denying them to the enemy before they could reach one. Neither behavior emerged in practice. The agent showed no consistent tendency to navigate toward potions at low health, likely because the heal reward was too sparse relative to the dense combat signals for it to reinforce reliably. It is the kind of thing that would need curriculum shaping or a dedicated training phase to fix properly.
+
+### Reward Shaping (Phase 2)
+
+| Signal | Value |
+|---|---|
+| Win / Lose | +20 / -20 |
+| Landing a melee hit | +0.50 |
+| Landing a bow hit | +0.70 |
+| Blocking successfully | +0.40 |
+| Dodging an incoming arrow | +0.60 |
+| Retreating when HP is below 30 | +0.15 |
+| Missing an attack | -0.10 |
+| Idling at range | -0.08 |
+| Healing from a potion (defined, never emerged) | +2.50 |
+| Stealing a potion from the enemy (defined, never emerged) | +1.50 |
+| Time penalty per step | -0.001 |
 
 ### Observation Space (17 inputs)
 
-Each frame the agent receives its own position, the opponent's position, both health values, all cooldown states, facing direction, and environmental information: the location and availability of the nearest health potion, and the distance of the nearest incoming arrow.
+Each frame the agent receives its own position, the opponent's position, both health values, all cooldown states, facing direction, and environmental context: the location and availability of the nearest health potion, and the normalized distance of the nearest incoming enemy arrow.
 
 ### Action Space
 
@@ -238,9 +259,9 @@ Each frame the agent receives its own position, the opponent's position, both he
 
 ### Network Architecture
 
-Three fully connected layers: 17 inputs, two hidden layers of 64 neurons with ReLU activations, 10 outputs with argmax selection.
+Input (17) -> Linear(128) -> ReLU -> Linear(128) -> ReLU -> Linear(10) -> argmax
 
-After training, weights are exported as C float arrays and compiled into the binary. The observation vector in C matches the Python training environment exactly, including all normalization ranges. Keeping those aligned was one of the more tedious parts of the port.
+Phase 2 used a larger 128x128 hidden layer architecture compared to Phase 1 to handle the increased complexity of the reward signal. The export script detects layer sizes dynamically, so the generated `weights.h` header always matches whatever architecture was actually trained with no manual editing required. After export, the observation vector in C matches the Python environment exactly, including all normalization ranges. Keeping those aligned was one of the more careful parts of the port.
 
 ---
 

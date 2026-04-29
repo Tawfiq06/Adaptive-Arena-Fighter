@@ -177,6 +177,10 @@ Each map has a config struct that describes its visual character: how many trees
 
 **Canopy rendering** is one of the more satisfying details. Tall decorations like large trees and big rocks are split into two draw passes. The base is drawn first, behind players. The canopy top is drawn in a second pass, on top of players. This means you can actually hide behind a tree or duck behind a boulder during a fight. The canopy pass only runs for decorations near a player, so it does not cost much.
 
+<p align="center">
+  <img width="800" height="604" alt="canopy_cover" src="https://github.com/user-attachments/assets/8253067b-b1ae-44ee-8868-76e242f64882" />
+</p>
+
 Adding a new decoration type is one entry in a lookup table. The placement algorithm and canopy system pick it up automatically.
 
 Current decoration types: green trees (large/medium/small), autumn red and yellow trees, stick trees, ice trees, brown and grey rocks, bushes, ferns, cattails.

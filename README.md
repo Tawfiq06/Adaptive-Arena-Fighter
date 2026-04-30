@@ -10,8 +10,11 @@ Two players fight across four hand-crafted arenas that physically transform mid-
 
 ## Quick Look
 
-[![Demo Video](assets/thumbnail.png)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
-*Click to watch the demo*
+**Click the name of the demo to watch each demo video**
+
+[Tundra Map - Player VS AI Demo](https://youtu.be/paAt1P5qxZY) &nbsp; &nbsp; &nbsp; &nbsp; [Coralpoint Map - Player VS Player Demo](https://youtu.be/R8PqE5o_NaE) &nbsp; &nbsp; &nbsp; &nbsp; [Ironridge Map - Player VS AI Demo](https://youtu.be/KdnbLQKOYF4)
+
+
 
 | | |
 |---|---|
@@ -77,7 +80,7 @@ Tiles carry gameplay flags that the physics engine checks every frame: solid til
 
 ### Greenreach
 
-A lush meadow with autumn trees. Mid-match, lava creeps inward from the edges burning trees close by.
+A lush meadow with autumn trees. Mid-match, lava creeps inward from the edges, scorching the trees in its path.
 
 | Start | Mid-match |
 |---|---|
@@ -87,7 +90,7 @@ A lush meadow with autumn trees. Mid-match, lava creeps inward from the edges bu
 
 ### Coralpoint
 
-A sandy beach with water patches. Over time those patches freeze into ice and freezing close by trees.
+A sandy beach with water patches. Over time those patches freeze into ice, and the trees nearby frost over with them.
 
 | Start | Mid-match |
 |---|---|
@@ -103,8 +106,6 @@ A snow and ice biome. Lava vents randomly erupt across the floor during the matc
 |---|---|
 | <img width="2030" height="1528" alt="tundra" src="https://github.com/user-attachments/assets/8a3bb045-0c5b-4920-80df-26106e51f419" /> | <img width="2468" height="1831" alt="tundra_evo" src="https://github.com/user-attachments/assets/c56f4768-a9e4-4250-9426-252e6d60a323" />|
 
-![Lava damage demo](assets/gifs/lava_damage.gif)
-
 ---
 
 ### Ironridge
@@ -114,8 +115,6 @@ A rocky stone arena. Flooding begins mid-match: water rises ring by ring from th
 | Start | Mid-match |
 |---|---|
 | <img width="2030" height="1522" alt="ironridge" src="https://github.com/user-attachments/assets/0d9efd2c-48f7-40f1-89db-0671ae372d40" /> | <img width="2030" height="1534" alt="ironridge_evo" src="https://github.com/user-attachments/assets/e2d9a1c0-8cdd-4d2f-8bbd-9aeef5eda2ad" /> |
-
-![Water slowdown demo](assets/gifs/water_slow.gif)
 
 ---
 
@@ -150,13 +149,13 @@ The combat system rewards timing and positioning over mashing.
 
 **Ranged attacks** fire an arrow that checks collision against all players every frame. The AI uses this too, so tracking incoming arrows matters.
 
-**Health potions** spawn every 15 seconds, up to 2 active at once. Walking over one restores health. They are a meaningful strategic target in both PVP and PVE, and the AI actively navigates toward them when its health is low.
+**Health potions** spawn every 15 seconds, up to 2 active at once. Walking over one restores health. They are a meaningful strategic target in both PVP and PVE.
 
 ---
 
 ## Player Names and HUD
 
-Before the match, both players type a custom name using the keyboard. The screen handles backspace, caps lock, and length limits. Names default to "P1" and "P2" if skipped.
+Before the match, both players type a custom name using the keyboard. The screen handles backspace, caps lock, and length limits. Names default to "P1" and "P2" if skipped. When in Player VS AI mode, only the player gets to enter a name. The AI is defaulted to "P2".
 
 In-game, each name renders directly above its player's health bar. The position is calculated from the string length so it always sits centered over the bar regardless of how long the name is.
 
@@ -176,7 +175,7 @@ Inside the ISR, samples are pushed to the audio FIFO from a mixer that combines 
 
 The result is audio that is completely decoupled from game loop timing. A slow frame has no effect on audio quality.
 
-All audio assets (sword swing variants, arrow sounds, block clashes, item pickups, background music, ambient storm audio) are stored as raw PCM arrays compiled directly into the binary.
+All audio assets (sword swing variants, arrow sounds, block clashes, item pickups, background music, ambient storm audio) are stored as raw PCM arrays compiled directly into the binary. Setting this up required direct use of RISC-V CSR instructions: `csrw mtvec` to set the interrupt vector, `csrs mstatus` to enable global interrupts, and `csrs mie` to enable the specific IRQ lines for the frame timer and audio.
 
 ---
 
@@ -218,9 +217,6 @@ This structure mattered in practice. The ice map was added mid-project and requi
 
 The AI opponent uses a small neural network trained with reinforcement learning via **Gymnasium** in Python, then exported as C float arrays and run entirely in C on the Nios V/RISC-V processor. No external library, no runtime Python, no dynamic allocation. Just matrix multiplication and ReLU, running deterministically within a bounded time window every frame.
 
-**Watch the trained agent fight a player:**
-[![RL Agent Demo](assets/rl_demo_thumbnail.png)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
-
 ### Training Approach
 
 We built a Python simulation environment that mirrored the game's physics and combat rules. The agent trained against a scripted heuristic opponent using PPO (Proximal Policy Optimization) from Stable-Baselines3, across multiple versions that each built on the weights of the last. After several rounds of iteration, **v3 was the best performing checkpoint** and is the one running in the final game.
@@ -259,7 +255,9 @@ Each frame the agent receives its own position, the opponent's position, both he
 
 ### Network Architecture
 
+```
 Input (17) -> Linear(128) -> ReLU -> Linear(128) -> ReLU -> Linear(10) -> argmax
+```
 
 Phase 2 used a larger 128x128 hidden layer architecture compared to Phase 1 to handle the increased complexity of the reward signal. The export script detects layer sizes dynamically, so the generated `weights.h` header always matches whatever architecture was actually trained with no manual editing required. After export, the observation vector in C matches the Python environment exactly, including all normalization ranges. Keeping those aligned was one of the more careful parts of the port.
 
